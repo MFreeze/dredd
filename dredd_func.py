@@ -78,6 +78,8 @@ class Dredd(dr.DreddBase):
         dice = arg.split("d")
         sides = int(dice[1])
         num = int(dice[0])
+        if dice > 9999 or sides > 9999:
+            return "WTF?!?"
         return sum(randrange(sides)+1 for die in range(num))
 
     # En cas de message privé
@@ -284,7 +286,7 @@ class Dredd(dr.DreddBase):
         c = self.connection
         auteur = irclib.nm_to_n(e.source())
         action = self.ls_blague[blague]
-        if action[0] != "privmsg":
+        if action[0].strip() == "privmsg":
             getattr(c, action[0])(self.channel, action[1])
         else:
             getattr(c, action[0])(self.channel, auteur, action[1])

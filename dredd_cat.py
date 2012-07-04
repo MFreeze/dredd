@@ -8,6 +8,52 @@ import signal
 import sys
 import getopt
 
+import os
+import urllib
+import re
+from  random import randrange,randint
+from datetime import date
+
+LISTE_CMD_PUB = ["!pop", "!roll", "!enfr", "!fren", "!wp", "!wpf", "!urb", "!port",
+                 "!halp", "!down", "!jobs", "!bieber", "!weekend", "!dredd", "!popall", "!rr",
+                 "!getscore"]
+LISTE_CMD_PRIV = ["!push", "!id"]
+LISTE_CMD_MASTER = ["!update", "!kick", "!topic", "!saychan", "!op", "!uban", "!reset"]
+LISTE_BLAGUE = {"a+":("privmsg", "Je savais que vous alliez dire ça."),
+                "++":("privmsg", "Je savais que vous alliez dire ça."),
+                "marie france":("privmsg", "Mmmmmmmh, Marie France :)"),
+                "marie-france":("privmsg", "Mmmmmmmh, Marie France :)"), 
+                "sasha":("privmsg", "<3"), 
+                "soeur":("privmsg", "Ta soeur porte des leggings!"), 
+                "pute":("privmsg", "Juge pute!"),
+                "concentré":("privmsg", "T'as qu'à aller dans un camps!"),
+                "concentrer":("privmsg", "T'as qu'à aller dans un camps!"), 
+                "xd":("kick", "MEIN LEBENSRAUM o/"), 
+                "chmod":("kick", "La séance est levée."),
+                "><":("kick", "Tas de cons!"), 
+                "kikoo":("kick", "Désolé j'ai mes règles"), 
+                "arwen":("kick", "Leia > *"),
+                "chmod 777":("kick", "PUTAIIIIIIIIN"),
+                "^^":("kick", "I'm back!")}
+
+PILE_MAX_SIZE = 16
+INIT_PATIENCE = 4
+WEEKEND = ['Déjà ?', 'T\'en est loin coco.', 'Nope :(', 'ça vient !', 'Preque \o/', 'Mais on est déjà en weekend, va te biturer !', 'C\'est déjà presque finis :(']
+
+MASTER="trax"
+MASTERPASS="penis:666"
+
+# TODO: Lecture des scores dans un fichier
+SCORE_FILE="dredd.score"
+
+OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664, 
+      "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
+      "master":"trax", "masterpass":"penis:666", "liste_blague":LISTE_BLAGUE,
+      "list_cmd_gm":LISTE_CMD_MASTER, "list_cmd_pv":LISTE_CMD_PRIV,
+      "list_cmd_pub":LISTE_CMD_PUB, "weekend":WEEKEND}
+
+CONFIG_FILE="dredd.conf"
+
 OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664, 
       "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
       "master":"trax", "masterpass":"penis:666"}
@@ -132,56 +178,9 @@ class DreddBase(ircbot.SingleServerIRCBot):
         self.disconnect(self.channel, "I'll be back!")
         sys.exit(0)
 
-import os
-import urllib
-import re
-import dredd_base as dr
-from  random import randrange,randint
-from datetime import date
-
-LISTE_CMD_PUB = ["!pop", "!roll", "!enfr", "!fren", "!wp", "!wpf", "!urb", "!port",
-                 "!halp", "!down", "!jobs", "!bieber", "!weekend", "!dredd", "!popall", "!rr",
-                 "!getscore"]
-LISTE_CMD_PRIV = ["!push", "!id"]
-LISTE_CMD_MASTER = ["!update", "!kick", "!topic", "!saychan", "!op", "!uban", "!reset"]
-LISTE_BLAGUE = {"a+":("privmsg", "Je savais que vous alliez dire ça."),
-                "++":("privmsg", "Je savais que vous alliez dire ça."),
-                "marie france":("privmsg", "Mmmmmmmh, Marie France :)"),
-                "marie-france":("privmsg", "Mmmmmmmh, Marie France :)"), 
-                "sasha":("privmsg", "<3"), 
-                "soeur":("privmsg", "Ta soeur porte des leggings!"), 
-                "pute":("privmsg", "Juge pute!"),
-                "concentré":("privmsg", "T'as qu'à aller dans un camps!"),
-                "concentrer":("privmsg", "T'as qu'à aller dans un camps!"), 
-                "xd":("kick", "MEIN LEBENSRAUM o/"), 
-                "chmod":("kick", "La séance est levée."),
-                "><":("kick", "Tas de cons!"), 
-                "kikoo":("kick", "Désolé j'ai mes règles"), 
-                "arwen":("kick", "Leia > *"),
-                "chmod 777":("kick", "PUTAIIIIIIIIN"),
-                "^^":("kick", "I'm back!")}
-
-PILE_MAX_SIZE = 16
-INIT_PATIENCE = 4
-WEEKEND = ['Déjà ?', 'T\'en est loin coco.', 'Nope :(', 'ça vient !', 'Preque \o/', 'Mais on est déjà en weekend, va te biturer !', 'C\'est déjà presque finis :(']
-
-MASTER="trax"
-MASTERPASS="penis:666"
-
-# TODO: Lecture des scores dans un fichier
-SCORE_FILE="dredd.score"
-
-OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664, 
-      "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
-      "master":"trax", "masterpass":"penis:666", "liste_blague":LISTE_BLAGUE,
-      "list_cmd_gm":LISTE_CMD_MASTER, "list_cmd_pv":LISTE_CMD_PRIV,
-      "list_cmd_pub":LISTE_CMD_PUB, "weekend":WEEKEND}
-
-CONFIG_FILE="dredd.conf"
-
-class Dredd(dr.DreddBase):
+class Dredd(DreddBase):
     def __init__(self, dico):
-        dr.DreddBase.__init__(self, dico)
+        DreddBase.__init__(self, dico)
         # Liste des commandes acceptées sur le chan
         self.ls_cmd_pb = dico["list_cmd_pub"]
         # Liste des commandes acceptées en privé
@@ -205,6 +204,8 @@ class Dredd(dr.DreddBase):
         dice = arg.split("d")
         sides = int(dice[1])
         num = int(dice[0])
+        if dice > 9999 or sides > 9999:
+            return "WTF?!?"
         return sum(randrange(sides)+1 for die in range(num))
 
     # En cas de message privé
@@ -411,7 +412,7 @@ class Dredd(dr.DreddBase):
         c = self.connection
         auteur = irclib.nm_to_n(e.source())
         action = self.ls_blague[blague]
-        if action[0] != "privmsg":
+        if action[0].strip() == "privmsg":
             getattr(c, action[0])(self.channel, action[1])
         else:
             getattr(c, action[0])(self.channel, auteur, action[1])
