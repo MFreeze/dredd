@@ -19,9 +19,10 @@ OPPASSWD="BITE"
 OPLOGIN="BITE"
 
 LISTE_CMD_PUB = ["!pop", "!roll", "!enfr", "!fren", "!wp", "!wpf", "!urb", "!port",
-                 "!halp", "!down", "!jobs", "!bieber", "!weekend", "!dredd", "!popall"]
+                 "!halp", "!down", "!jobs", "!bieber", "!weekend", "!dredd", "!popall", "!rr",
+                 "!getscore"]
 LISTE_CMD_PRIV = ["!push", "!id"]
-LISTE_CMD_MASTER = ["!update", "!kick", "!topic", "!saychan", "!op", "!uban"]
+LISTE_CMD_MASTER = ["!update", "!kick", "!topic", "!saychan", "!op", "!uban", "!reset"]
 LISTE_BLAGUE = {"a+":("privmsg", "Je savais que vous alliez dire ça."),
                 "++":("privmsg", "Je savais que vous alliez dire ça."),
                 "marie france":("privmsg", "Mmmmmmmh, Marie France :)"),
@@ -63,6 +64,8 @@ class Dredd(dr.DreddBase):
         self.pile = list()
         # Indice de patience
         self.patience = INIT_PATIENCE
+        self.curscore = {}
+        self.maxscore = {}
 
     # Fonction gérant le lancer de dés
     def _des(self, arg):
@@ -96,8 +99,35 @@ class Dredd(dr.DreddBase):
             if ts != None:
                 c.privmsg(self.channel, "%s" % ts)
 
+    def getscore(self, complement, c, auteur):
+        if auteur not in self.maxscore.keys():
+            c.privmsg(self.channel, "T'as pas joué, abruti!")
+            self._patience(c, auteur)
+        else:
+            c.privmsg(self.channel, "En cours : %d, Meilleur : %d" % (self.curscore[auteur],
+                                                                      self.maxscore[auteur]))
+
+    def reset(self, complement, c, auteur):
+        self.curscore = {}
+        self.maxscore = {}
+        c.privmsg(self.channel, "Nouveau départ.")
+
     def dredd(self, complement, c, auteur):
         c.privmsg(self.channel, "La version 1 est morte...")
+
+    def rr(self, complement, c, auteur):
+        if self._des("1d6") == 6:
+            self.ban(self.channel, auteur, "Je vais le remettre au rayon surgelé")
+        else:
+            if auteur in self.curscore.keys():
+                self.curscore[auteur] += 1
+                if self.maxscore[auteur] < self.curscore[auteur]:
+                    c.privmsg(self.channel, "Nouveau meilleur score : %d" % self.curscore[auteur])
+                    self.maxscore[auteur] = self.curscore[auteur]
+            else:
+                self.curscore[auteur] = 1
+                c.privmsg(self.channel, "Nouveau meilleur score : %d" % self.curscore[auteur])
+                self.maxscore[auteur] = self.curscore[auteur]
 
     def tasoeur(self, complement):
         res = re.search(r'(le|du|la|un|une|mon|ma) ([a-zA-Zéàùôê]+)',complement)
