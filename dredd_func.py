@@ -51,7 +51,7 @@ class Dredd(dr.DreddBase):
                     master = "", masterpass = "", oppasswd = "", opname = "", list_cmd_pub=LISTE_CMD_PUB, 
                     list_cmd_pv=LISTE_CMD_PRIV, liste_blague=LISTE_BLAGUE,
                  list_cmd_gm=LISTE_CMD_MASTER, maspass = MASTERPASS):
-        dr.__init__(self, channel, nick, server, port, hello, master, masterpass, oppasswd, opname)
+        dr.DreddBase.__init__(self, channel, nick, server, port, hello, master, masterpass, oppasswd, opname)
         # Liste des commandes acceptées sur le chan
         self.ls_cmd_pb = list_cmd_pub
         # Liste des commandes acceptées en privé
@@ -111,7 +111,11 @@ class Dredd(dr.DreddBase):
             return None
 
     def uban(self, complement, c, auteur):
-        self.ban(complement)
+        arg = complement.strip()
+        try:
+            self.ban(self.channel, arg[0], arg[1], arg[2])
+        except:
+            pass
 
     def roll(self, complement, c, auteur):
         if len(complement) != 0:

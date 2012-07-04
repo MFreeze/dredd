@@ -3,6 +3,7 @@
 
 import ircbot
 import irclib
+import Timer
 
 CHAN="#stux"
 NICK="Dredd"
@@ -49,8 +50,13 @@ class DreddBase(ircbot.SingleServerIRCBot):
         except:
             print("Impossible de récupérer les services.")
 
-    def ban(self, text):
-        self.connection.send_raw("KNOCKOUT : "+text)
+    def unban(self, nick):
+        self.connection.mode(self.channel, "-b %s" % nick)
+
+    def ban(self, channel, nick, comment="", time=1200):
+        self.connection.kick(self.channel, nick, comment)
+        t = Timer(time, self.unban)
+        t.start()
 
     def on_youreoper(self, c, e):
         c.mode(self.channel, "+o %s" % self.nick)
