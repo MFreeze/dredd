@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/python2.7
 #-*- coding: utf-8 -*-
 
 import ircbot
 import irclib
-import Timer
+from threading import *
 
 CHAN="#stux"
 NICK="Dredd"

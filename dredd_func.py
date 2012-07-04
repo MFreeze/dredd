@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2.7
 #-*- coding: utf-8 -*-
 
 import sys
@@ -12,8 +12,8 @@ from datetime import date
 
 CHAN="#stux"
 NICK="Dredd"
-SERV="dadaist.com"
-PORT=1664
+SERV="dda.com"
+PORT=69
 HELLO="Ici la loi c'est moi."
 OPPASSWD="BITE"
 OPLOGIN="BITE"
@@ -113,8 +113,9 @@ class Dredd(dr.DreddBase):
     def uban(self, complement, c, auteur):
         arg = complement.strip()
         try:
-            self.ban(self.channel, arg[0], arg[1], arg[2])
+            self.ban(self.channel, arg[0], "Une simple envie...", arg[1])
         except:
+            print "Raté"
             pass
 
     def roll(self, complement, c, auteur):
