@@ -111,11 +111,10 @@ class Dredd(dr.DreddBase):
             return None
 
     def uban(self, complement, c, auteur):
-        arg = complement.strip()
+        arg = complement.split()
         try:
             self.ban(self.channel, arg[0], "Une simple envie...", arg[1])
         except:
-            print "Raté"
             pass
 
     def roll(self, complement, c, auteur):

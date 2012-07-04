@@ -55,8 +55,10 @@ class DreddBase(ircbot.SingleServerIRCBot):
 
     def ban(self, channel, nick, comment="", time=1200):
         self.connection.kick(self.channel, nick, comment)
-        t = Timer(time, self.unban)
-        t.start()
+        self.connection.mode(self.channel, "+b %s" % nick)
+        if (time > 0):
+            t = Timer(time, self.unban, [nick])
+            t.start()
 
     def on_youreoper(self, c, e):
         c.mode(self.channel, "+o %s" % self.nick)
