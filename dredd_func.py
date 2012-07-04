@@ -21,7 +21,7 @@ OPLOGIN="BITE"
 LISTE_CMD_PUB = ["!pop", "!roll", "!enfr", "!fren", "!wp", "!wpf", "!urb", "!port",
                  "!halp", "!down", "!jobs", "!bieber", "!weekend", "!dredd", "!popall"]
 LISTE_CMD_PRIV = ["!push", "!id"]
-LISTE_CMD_MASTER = ["!update", "!kick", "!topic", "!saychan", "!op"]
+LISTE_CMD_MASTER = ["!update", "!kick", "!topic", "!saychan", "!op", "!uban"]
 LISTE_BLAGUE = {"a+":("privmsg", "Je savais que vous alliez dire ça."),
                 "++":("privmsg", "Je savais que vous alliez dire ça."),
                 "marie france":("privmsg", "Mmmmmmmh, Marie France :)"),
@@ -109,6 +109,9 @@ class Dredd(dr.DreddBase):
                     return "C'est ta soeur la " + res.group(2)
         else:
             return None
+
+    def uban(self, complement, c, auteur):
+        self.ban(complement)
 
     def roll(self, complement, c, auteur):
         if len(complement) != 0:
