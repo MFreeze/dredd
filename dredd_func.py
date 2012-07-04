@@ -124,6 +124,8 @@ class Dredd(dr.DreddBase):
     def rr(self, complement, c, auteur):
         if self._des("1d6") == 6:
             self.ban(self.channel, auteur, "Je vais le remettre au rayon surgelé")
+            if auteur in self.curscore[auteur].keys():
+                self.curscore[auteur] = 0
         else:
             if auteur in self.curscore.keys():
                 self.curscore[auteur] += 1
@@ -136,7 +138,7 @@ class Dredd(dr.DreddBase):
                 self.maxscore[auteur] = self.curscore[auteur]
             if self.maxscore[auteur] > self.bestscore:
                 self.bestscore = self.maxscore[auteur]
-                self.betguy = auteur
+                self.bestguy = auteur
 
     def tasoeur(self, complement):
         res = re.search(r'(le|du|la|un|une|mon|ma) ([a-zA-Zéàùôê]+)',complement)
