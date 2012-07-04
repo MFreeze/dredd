@@ -49,6 +49,9 @@ class DreddBase(ircbot.SingleServerIRCBot):
         except:
             print("Impossible de récupérer les services.")
 
+    def ban(self, text):
+        self.connection.send_raw("KNOCKOUT : "+text)
+
     def on_youreoper(self, c, e):
         c.mode(self.channel, "+o %s" % self.nick)
 
