@@ -352,7 +352,7 @@ class Dredd(DreddBase):
         except:
             mes += "Une url valide ça te dit quelque chose?"
             self._patience(c, auteur)
-            return mes
+        return mes
 
     def pop(self, complement, c, auteur):
         if len(self.pile) > 0:
