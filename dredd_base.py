@@ -1,5 +1,5 @@
-#!/usr/bin/python2
-#-*- coding: utf-8 -*-
+#!/usr/bin/env python
+#-*-coding:utf-8-*
 
 import ircbot
 import irclib
@@ -36,19 +36,21 @@ class DreddBase(ircbot.SingleServerIRCBot):
         # Chargement des options
         self.services = {}
         try:
-            f = open("/etc/services") #ro
+            f = open("/etc/services", "r") #ro
             for line in f:
                 if (not line.startswith("#")):
                     line = line.rstrip("\n").split("\t")
                     if (len(line) > 2):
-                        if line[0] in self.services:
+                        if line[0] in self.services.keys():
                             # Si le service existe, on ajoute le port
                             self.services[line[0]] += ", %s" % line[2]
                         else:
                             self.services[line[0].lower()] = line[2]
-                    f.close()
-        except:
+            f.close()
+        except Exception as e:
+            print (e)
             print("Impossible de récupérer les services.")
+        print(self.services)
 
     def unban(self, nick):
         self.connection.mode(self.channel, "-b %s" % nick)
