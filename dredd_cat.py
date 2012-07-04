@@ -14,6 +14,12 @@ import re
 from  random import randrange,randint
 from datetime import date
 
+OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664, 
+      "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
+      "master":"trax", "masterpass":"penis:666"}
+
+CONFIG_FILE="dredd.conf"
+
 LISTE_CMD_PUB = ["!pop", "!roll", "!enfr", "!fren", "!wp", "!wpf", "!urb", "!port",
                  "!halp", "!down", "!jobs", "!bieber", "!weekend", "!dredd", "!popall", "!rr",
                  "!getscore"]
@@ -51,12 +57,6 @@ OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664,
       "master":"trax", "masterpass":"penis:666", "liste_blague":LISTE_BLAGUE,
       "list_cmd_gm":LISTE_CMD_MASTER, "list_cmd_pv":LISTE_CMD_PRIV,
       "list_cmd_pub":LISTE_CMD_PUB, "weekend":WEEKEND}
-
-CONFIG_FILE="dredd.conf"
-
-OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664, 
-      "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
-      "master":"trax", "masterpass":"penis:666"}
 
 CONFIG_FILE="dredd.conf"
 
