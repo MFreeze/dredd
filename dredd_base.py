@@ -1,39 +1,39 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 #-*- coding: utf-8 -*-
 
 import ircbot
 import irclib
-from threading import *
+from threading import Timer
+import signal
+import sys
+import getopt
 
-CHAN="#stux"
-NICK="Dredd"
-SERV="dadaist.com"
-PORT=1664
-HELLO="Ici la loi c'est moi."
-OPPASSWD="BITE"
-OPLOGIN="BITE"
+OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664, 
+      "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
+      "master":"trax", "masterpass":"penis:666"}
 
-MASTER="trax"
-MASTERPASS = "penis:666"
+CONFIG_FILE="dredd.conf"
 
 class DreddBase(ircbot.SingleServerIRCBot):
-    def __init__(self, channel, nick, server, port=6667, hello="Ici, la Loi c'est moi.", 
-                 master = "", masterpass = "", oppasswd = "", opname = ""):
+    def __init__(self, dico):
         # Utilisation de la classe SingleServerIRCBot comme classe parente
-        ircbot.SingleServerIRCBot.__init__(self, [(server, port)], nick, 60)
+        ircbot.SingleServerIRCBot.__init__(self, [(dico["server"], dico["port"])], dico["nick"], 60)
         #self.ircobj.add_global_handler("youreoper", self.rapport)
         #self.ircobj.add_global_handler("all_events", self.rapportbis)
-        self.nick = nick
+        self.nick = dico["nick"]
         # Channel sur lequel sévit Dredd
-        self.channel = channel
+        self.channel = dico["chan"]
         # Phrase d'accueil
-        self.hello = hello
+        self.hello = dico["hello"]
         # Les différents mots de passe
-        self.master = master
-        self.operpassword = oppasswd
-        self.opername = opname
+        self.master = dico["master"]
+        self.operpassword = dico["oppasswd"]
+        self.opername = dico["opname"]
+        self.banned=[]
         # Identité du maître
-        self.masterpassword = masterpass
+        self.masterpassword = dico["masterpass"]
+        signal.signal(signal.SIGINT, self.quit)
+        # Chargement des options
         self.services = {}
         try:
             f = open("/etc/services") #ro
@@ -52,8 +52,12 @@ class DreddBase(ircbot.SingleServerIRCBot):
 
     def unban(self, nick):
         self.connection.mode(self.channel, "-b %s" % nick)
+        if nick in self.banned:
+            self.banned.pop(nick)
 
     def ban(self, channel, nick, comment="", time=1620):
+        if nick not in self.banned:
+            self.banned.append(nick)
         self.connection.kick(self.channel, nick, comment)
         self.connection.mode(self.channel, "+b %s" % nick)
         if (time > 0):
@@ -106,7 +110,7 @@ class DreddBase(ircbot.SingleServerIRCBot):
     def on_quit(self, c, e):
         qui = irclib.nm_to_n(e.source())
         if (qui == self.master):
-            self.master = MASTER
+            self.master = OPTS["master"]
 
     # En cas de changement de nick
     def on_nick(self, c, e):
@@ -122,6 +126,30 @@ class DreddBase(ircbot.SingleServerIRCBot):
         else:
             c.privmsg(auteur, "Fous toi ton %s où je pense!" % complement)
 
+    def quit(self):
+        self.disconnect(self.channel, "I'll be back!")
+        sys.exit(0)
+
 if __name__ == "__main__":
-    dredd = DreddBase(CHAN, NICK, SERV, PORT, HELLO, MASTER, MASTERPASS, OPPASSWD, OPLOGIN)
+    try:
+        opt, arg = getopt.getopt(sys.argv[1:], "c:")
+    except getopt.GetoptError as err:
+        print ("Erreur à la lecture des options, sélection des options par défaut")
+
+    for o, a in opt: 
+        if o == "c":
+            CONFIG_FILE = a
+        else:
+            pass
+
+    try:
+        with open(CONFIG_FILE, "r") as f:
+            for line in f:
+                lopt = line.split("=")
+                if lopt[0].strip() in OPTS.keys():
+                    OPTS[lopt[0].strip()] = lopt[1].strip
+    except:
+        pass
+
+    dredd = DreddBase(OPTS)
     dredd.start()

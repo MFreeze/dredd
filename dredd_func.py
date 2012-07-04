@@ -1,22 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 #-*- coding: utf-8 -*-
 
 import sys
+import signal
 import irclib
 import os
 import urllib
 import re
+import getopt
 import dredd_base as dr
 from  random import randrange,randint
 from datetime import date
-
-CHAN="#stux"
-NICK="Dredd"
-SERV="dda.com"
-PORT=69
-HELLO="Ici la loi c'est moi."
-OPPASSWD="BITE"
-OPLOGIN="BITE"
 
 LISTE_CMD_PUB = ["!pop", "!roll", "!enfr", "!fren", "!wp", "!wpf", "!urb", "!port",
                  "!halp", "!down", "!jobs", "!bieber", "!weekend", "!dredd", "!popall", "!rr",
@@ -45,21 +39,30 @@ INIT_PATIENCE = 4
 WEEKEND = ['Déjà ?', 'T\'en est loin coco.', 'Nope :(', 'ça vient !', 'Preque \o/', 'Mais on est déjà en weekend, va te biturer !', 'C\'est déjà presque finis :(']
 
 MASTER="trax"
-MASTERPASS = "penis:666"
+MASTERPASS="penis:666"
+
+# TODO: Lecture des scores dans un fichier
+SCORE_FILE="dredd.score"
+
+OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664, 
+      "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
+      "master":"trax", "masterpass":"penis:666", "liste_blague":LISTE_BLAGUE,
+      "list_cmd_gm":LISTE_CMD_MASTER, "list_cmd_pv":LISTE_CMD_PRIV,
+      "list_cmd_pub":LISTE_CMD_PUB, "weekend":WEEKEND}
+
+CONFIG_FILE="dredd.conf"
 
 class Dredd(dr.DreddBase):
-    def __init__(self, channel, nick, server, port=6667, hello="Ici, la Loi c'est moi.", 
-                    master = "", masterpass = "", oppasswd = "", opname = "", list_cmd_pub=LISTE_CMD_PUB, 
-                    list_cmd_pv=LISTE_CMD_PRIV, liste_blague=LISTE_BLAGUE,
-                 list_cmd_gm=LISTE_CMD_MASTER, maspass = MASTERPASS):
-        dr.DreddBase.__init__(self, channel, nick, server, port, hello, master, masterpass, oppasswd, opname)
+    def __init__(self, dico):
+        dr.DreddBase.__init__(self, dico)
         # Liste des commandes acceptées sur le chan
-        self.ls_cmd_pb = list_cmd_pub
+        self.ls_cmd_pb = dico["list_cmd_pub"]
         # Liste des commandes acceptées en privé
-        self.ls_cmd_pv = list_cmd_pv
-        self.ls_cmd_gm = list_cmd_gm
+        self.ls_cmd_pv = dico["list_cmd_pv"]
+        self.ls_cmd_gm = dico["list_cmd_gm"]
+        self.weekend = dico["weekend"]
         # Liste des mots provoquant une action de la part de Dredd
-        self.ls_blague = liste_blague 
+        self.ls_blague = dico["liste_blague"]
         # Création de la pile
         self.pile = list()
         # Indice de patience
@@ -68,6 +71,7 @@ class Dredd(dr.DreddBase):
         self.maxscore = {}
         self.bestguy = ""
         self.bestscore = 0
+        signal.signal(signal.SIGINT, self.quit)
 
     # Fonction gérant le lancer de dés
     def _des(self, arg):
@@ -78,7 +82,7 @@ class Dredd(dr.DreddBase):
 
     # En cas de message privé
     def on_privmsg(self, c, e):
-        print e
+        print(e)
         self.do_command(e, e.arguments()[0])
 
     # En cas de messages publiés sur le channel
@@ -262,7 +266,7 @@ class Dredd(dr.DreddBase):
         c.privmsg(self.channel, self.is_down(complement, auteur, c))
 
     def weekend(self, complement, c, auteur):
-        c.privmsg(self.channel, WEEKEND[date.today().weekday()])
+        c.privmsg(self.channel, self.weekend[date.today().weekday()])
 
     # Gestion des commandes publiques
     def execute_action(self, e, arg):
@@ -303,11 +307,12 @@ class Dredd(dr.DreddBase):
 
     def update(self, complement, c, auteur):
         os.system("sleep 2 && %s a" % sys.argv[0])
-        c.disconnect(self.channel, "I'll be back!")
-        sys.exit(0)
+        self.quit()
 
-    def quit(self, complement, c, auteur):
-        c.disconnect(self.channel, "I WILL SURVIVE!")
+    def quit(self, signal=0, frame=""):
+        for i in self.banned:
+            self.unban(i)
+        self.connection.disconnect("I WILL SURVIVE!")
         sys.exit(0)
 
     def topic(self, complement, c, auteur):
@@ -367,5 +372,29 @@ class Dredd(dr.DreddBase):
             self._patience(c, auteur)
 
 if __name__ == "__main__":
-    dredd = Dredd(CHAN, NICK, SERV, PORT, HELLO, MASTER, MASTERPASS, OPPASSWD, OPLOGIN)
+    try:
+        opt, arg = getopt.getopt(sys.argv[1:], "c:")
+    except getopt.GetoptError as err:
+        print ("Erreur à la lecture des options, sélection des options par défaut")
+
+    for o, a in opt: 
+        if o == "c":
+            CONFIG_FILE = a
+        else:
+            pass
+
+    try:
+        with open(CONFIG_FILE, "r") as f:
+            for line in f:
+                lopt = line.split("=")
+                if lopt[0].strip() in OPTS.keys():
+                    opt2 = lopt[1].replace("\n", "")
+                    if lopt[0].strip() == "port":
+                        OPTS["port"] = int(opt2.strip())
+                    else:
+                        OPTS[lopt[0].strip()] = opt2.strip()
+    except:
+        pass
+
+    dredd=Dredd(OPTS)
     dredd.start()
