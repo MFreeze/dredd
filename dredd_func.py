@@ -66,6 +66,8 @@ class Dredd(dr.DreddBase):
         self.patience = INIT_PATIENCE
         self.curscore = {}
         self.maxscore = {}
+        self.bestguy = ""
+        self.bestscore = 0
 
     # Fonction gérant le lancer de dés
     def _des(self, arg):
@@ -104,12 +106,16 @@ class Dredd(dr.DreddBase):
             c.privmsg(self.channel, "T'as pas joué, abruti!")
             self._patience(c, auteur)
         else:
-            c.privmsg(self.channel, "En cours : %d, Meilleur : %d" % (self.curscore[auteur],
-                                                                      self.maxscore[auteur]))
+            c.privmsg(self.channel, "Perso : en cours : %d, Meilleur : %d" % (self.curscore[auteur],
+                                                                              self.maxscore[auteur]))
+            c.privmsg(self.channel, "Meilleur joueur : %s (%d points)" % (self.bestguy,
+                                                                          self.bestscore))
 
     def reset(self, complement, c, auteur):
         self.curscore = {}
         self.maxscore = {}
+        self.bestscore = 0
+        self.bestguy = ""
         c.privmsg(self.channel, "Nouveau départ.")
 
     def dredd(self, complement, c, auteur):
@@ -128,6 +134,9 @@ class Dredd(dr.DreddBase):
                 self.curscore[auteur] = 1
                 c.privmsg(self.channel, "Nouveau meilleur score : %d" % self.curscore[auteur])
                 self.maxscore[auteur] = self.curscore[auteur]
+            if self.maxscore[auteur] > self.bestscore:
+                self.bestscore = self.maxscore[auteur]
+                self.betguy = auteur
 
     def tasoeur(self, complement):
         res = re.search(r'(le|du|la|un|une|mon|ma) ([a-zA-Zéàùôê]+)',complement)

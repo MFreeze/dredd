@@ -53,7 +53,7 @@ class DreddBase(ircbot.SingleServerIRCBot):
     def unban(self, nick):
         self.connection.mode(self.channel, "-b %s" % nick)
 
-    def ban(self, channel, nick, comment="", time=1200):
+    def ban(self, channel, nick, comment="", time=1620):
         self.connection.kick(self.channel, nick, comment)
         self.connection.mode(self.channel, "+b %s" % nick)
         if (time > 0):
