@@ -96,7 +96,6 @@ class DreddBase(ircbot.SingleServerIRCBot):
         except Exception as e:
             print (e)
             print("Impossible de récupérer les services.")
-        print(self.services)
 
     def unban(self, nick):
         self.connection.mode(self.channel, "-b %s" % nick)
