@@ -78,7 +78,7 @@ class Dredd(dr.DreddBase):
         dice = arg.split("d")
         sides = int(dice[1])
         num = int(dice[0])
-        if dice > 9999 or sides > 9999:
+        if num > 9999 or sides > 9999:
             return "WTF?!?"
         return sum(randrange(sides)+1 for die in range(num))
 
@@ -305,7 +305,7 @@ class Dredd(dr.DreddBase):
         c.mode(self.channel, "+o %s" % complement)
 
     def update(self, complement, c, auteur):
-        os.system("sleep 2 && %s a" % sys.argv[0])
+        os.system("sleep 2 && %s &" % sys.argv[0])
         self.quit()
 
     def quit(self, signal=0, frame=""):

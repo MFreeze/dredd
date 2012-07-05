@@ -202,7 +202,7 @@ class Dredd(DreddBase):
         dice = arg.split("d")
         sides = int(dice[1])
         num = int(dice[0])
-        if dice > 9999 or sides > 9999:
+        if num > 9999 or sides > 9999:
             return "WTF?!?"
         return sum(randrange(sides)+1 for die in range(num))
 
