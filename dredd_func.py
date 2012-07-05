@@ -3,8 +3,8 @@
 
 import sys
 import signal
-import irclib
 import os
+import irclib
 import urllib
 import re
 import getopt
@@ -48,7 +48,7 @@ OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664,
       "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
       "master":"trax", "masterpass":"penis:666", "liste_blague":LISTE_BLAGUE,
       "list_cmd_gm":LISTE_CMD_MASTER, "list_cmd_pv":LISTE_CMD_PRIV,
-      "list_cmd_pub":LISTE_CMD_PUB, "weekend":WEEKEND}
+      "list_cmd_pub":LISTE_CMD_PUB, "weekend":WEEKEND, "pid":"0"}
 
 CONFIG_FILE="dredd.conf"
 
@@ -71,6 +71,12 @@ class Dredd(dr.DreddBase):
         self.maxscore = {}
         self.bestguy = ""
         self.bestscore = 0
+        try:
+            pid = int(dico["pid"])
+        except:
+            pass
+        if pid != 0:
+            os.kill(pid, signal.SIGINT)
         signal.signal(signal.SIGINT, self.quit)
 
     # Fonction gérant le lancer de dés
@@ -305,7 +311,7 @@ class Dredd(dr.DreddBase):
         c.mode(self.channel, "+o %s" % complement)
 
     def update(self, complement, c, auteur):
-        os.system("sleep 2 && %s &" % sys.argv[0])
+        os.system("%s -p %d &" %(sys.argv[0], int(os.getpid())))
         self.quit()
 
     def quit(self, signal=0, frame=""):
@@ -372,13 +378,15 @@ class Dredd(dr.DreddBase):
 
 if __name__ == "__main__":
     try:
-        opt, arg = getopt.getopt(sys.argv[1:], "c:")
+        opt, arg = getopt.getopt(sys.argv[1:], "c:p:")
     except getopt.GetoptError as err:
         print ("Erreur à la lecture des options, sélection des options par défaut")
 
     for o, a in opt: 
-        if o == "c":
+        if o == "-c":
             CONFIG_FILE = a
+        elif o == "-p":
+            OPTS["pid"] = a
         else:
             pass
 
