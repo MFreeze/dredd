@@ -103,8 +103,6 @@ class DreddBase(ircbot.SingleServerIRCBot):
         if (qui == self.master):
             c.privmsg(self.channel, "HEIL %s ! :3" % (qui))
             c.mode(qui, "+o")
-        elif (qui.lower() == "amz"):
-            c.privmsg(self.channel, "TITS OR GTFO!")
         elif (qui.lower() == "djey"):
             c.privmsg(self.channel, "La fin du moooooooooonde! L'apacalypse est proche!")
 
