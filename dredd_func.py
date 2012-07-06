@@ -153,23 +153,24 @@ class Dredd(dr.DreddBase):
         c.privmsg(self.channel, "La version 1 est morte...")
 
     def rr(self, complement, c, auteur):
-        if self._des("1d6") == 6:
-            self.ban(self.channel, auteur, "Je vais le remettre au rayon surgelé")
-            if auteur in self.curscore.keys():
-                self.curscore[auteur] = 0
-        else:
-            if auteur in self.curscore.keys():
-                self.curscore[auteur] += 1
-                if self.maxscore[auteur] < self.curscore[auteur]:
+        if auteur not in self.banned:
+            if self._des("1d6") == 6:
+                self.ban(self.channel, auteur, "Je vais le remettre au rayon surgelé")
+                if auteur in self.curscore.keys():
+                    self.curscore[auteur] = 0
+            else:
+                if auteur in self.curscore.keys():
+                    self.curscore[auteur] += 1
+                    if self.maxscore[auteur] < self.curscore[auteur]:
+                        c.privmsg(auteur, "Nouveau meilleur score : %d" % self.curscore[auteur])
+                        self.maxscore[auteur] = self.curscore[auteur]
+                else:
+                    self.curscore[auteur] = 1
                     c.privmsg(auteur, "Nouveau meilleur score : %d" % self.curscore[auteur])
                     self.maxscore[auteur] = self.curscore[auteur]
-            else:
-                self.curscore[auteur] = 1
-                c.privmsg(auteur, "Nouveau meilleur score : %d" % self.curscore[auteur])
-                self.maxscore[auteur] = self.curscore[auteur]
-            if self.maxscore[auteur] > self.bestscore:
-                self.bestscore = self.maxscore[auteur]
-                self.bestguy = auteur
+                if self.maxscore[auteur] > self.bestscore:
+                    self.bestscore = self.maxscore[auteur]
+                    self.bestguy = auteur
 
     def tasoeur(self, complement):
         res = re.search(r'(le|du|la|un|une|mon|ma) ([a-zA-Zéàùôê]+)',complement)
