@@ -161,11 +161,11 @@ class Dredd(dr.DreddBase):
             if auteur in self.curscore.keys():
                 self.curscore[auteur] += 1
                 if self.maxscore[auteur] < self.curscore[auteur]:
-                    c.privmsg(self.channel, "Nouveau meilleur score : %d" % self.curscore[auteur])
+                    c.privmsg(auteur, "Nouveau meilleur score : %d" % self.curscore[auteur])
                     self.maxscore[auteur] = self.curscore[auteur]
             else:
                 self.curscore[auteur] = 1
-                c.privmsg(self.channel, "Nouveau meilleur score : %d" % self.curscore[auteur])
+                c.privmsg(auteur, "Nouveau meilleur score : %d" % self.curscore[auteur])
                 self.maxscore[auteur] = self.curscore[auteur]
             if self.maxscore[auteur] > self.bestscore:
                 self.bestscore = self.maxscore[auteur]
