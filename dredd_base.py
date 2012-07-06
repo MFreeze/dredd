@@ -58,8 +58,7 @@ class DreddBase(ircbot.SingleServerIRCBot):
             self.banned.pop(self.banned.index(nick))
 
     def ban(self, channel, nick, comment="", time=1620):
-        if nick not in self.banned:
-            self.banned.append(nick)
+        self.banned.append(nick)
         self.connection.kick(self.channel, nick, comment)
         self.connection.mode(self.channel, "+b %s" % nick)
         print ("Banned : %s" % nick)
