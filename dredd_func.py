@@ -170,10 +170,13 @@ class Dredd(dr.DreddBase):
                 else:
                     self.curscore[auteur] = 1
                     c.privmsg(auteur, "Nouveau meilleur score : %d" % self.curscore[auteur])
-                    self.maxscore[auteur] = self.curscore[auteur]
+                    if auteur not in self.maxscore.keys():
+                        self.maxscore[auteur] = self.curscore[auteur]
                 if self.maxscore[auteur] > self.bestscore:
                     self.bestscore = self.maxscore[auteur]
                     self.bestguy = auteur
+        else:
+            self._patience(c, auteur)
 
     def tasoeur(self, complement):
         res = re.search(r'(le|du|la|un|une|mon|ma) ([a-zA-Zéàùôê]+)',complement)
