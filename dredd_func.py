@@ -2,6 +2,7 @@
 #-*-coding:utf-8-*
 
 import sys
+import pickle
 import signal
 import os
 import irclib
@@ -78,6 +79,13 @@ class Dredd(dr.DreddBase):
         if pid != 0:
             os.kill(pid, signal.SIGINT)
         signal.signal(signal.SIGINT, self.quit)
+
+        try:
+            with open(SCORE_FILE, "rb") as sc:
+                mypick = pickle.Unpickler(sc)
+                self.maxscore = mypick.load()
+        except:
+            pass
 
     # Fonction gérant le lancer de dés
     def _des(self, arg):
@@ -311,12 +319,18 @@ class Dredd(dr.DreddBase):
         c.mode(self.channel, "+o %s" % complement)
 
     def update(self, complement, c, auteur):
-        os.system("%s -p %d &" %(sys.argv[0], int(os.getpid())))
+        os.system("sleep 1 && %s -p %d &" %(sys.argv[0], int(os.getpid())))
         self.quit()
 
     def quit(self, signal=0, frame=""):
         for i in self.banned:
             self.unban(i)
+        try:
+            with open(SCORE_FILE, "wb") as sc:
+                mypick = pickle.Pickler(sc)
+                mypick.dump(self.maxscore)
+        except:
+            pass
         self.connection.disconnect("I WILL SURVIVE!")
         sys.exit(0)
 
