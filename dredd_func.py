@@ -17,7 +17,7 @@ LISTE_CMD_PUB = ["!pop", "!roll", "!enfr", "!fren", "!wp", "!wpf", "!urb", "!por
                  "!halp", "!down", "!jobs", "!bieber", "!weekend", "!dredd", "!popall",
                  "!getscore", "!showcur", "!showmax"]
 LISTE_CMD_PRIV = ["!push", "!id", "!rr"]
-LISTE_CMD_MASTER = ["!update", "!kick", "!topic", "!saychan", "!op", "!uban", "!reset"]
+LISTE_CMD_MASTER = ["!update", "!kick", "!topic", "!saychan", "!op", "!uban", "!reset", "!gtfo"]
 LISTE_BLAGUE = {"a+":("privmsg", "Je savais que vous alliez dire ça."),
                 "++":("privmsg", "Je savais que vous alliez dire ça."),
                 "marie france":("privmsg", "Mmmmmmmh, Marie France :)"),
@@ -119,6 +119,9 @@ class Dredd(dr.DreddBase):
             ts = self.tasoeur(a)
             if ts != None:
                 c.privmsg(self.channel, "%s" % ts)
+
+    def gtfo(self, complement, c, auteur):
+        self.quit()
 
     def showcur(self, complement, c, auteur):
         tmp_list = [(self.curscore[a], [a]) for a in self.curscore.keys()]
