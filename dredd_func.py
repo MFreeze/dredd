@@ -14,9 +14,9 @@ from  random import randrange,randint
 from datetime import date
 
 LISTE_CMD_PUB = ["!pop", "!roll", "!enfr", "!fren", "!wp", "!wpf", "!urb", "!port",
-                 "!halp", "!down", "!jobs", "!bieber", "!weekend", "!dredd", "!popall", "!rr",
-                 "!getscore"]
-LISTE_CMD_PRIV = ["!push", "!id"]
+                 "!halp", "!down", "!jobs", "!bieber", "!weekend", "!dredd", "!popall",
+                 "!getscore", "!showcur", "!showmax"]
+LISTE_CMD_PRIV = ["!push", "!id", "!rr"]
 LISTE_CMD_MASTER = ["!update", "!kick", "!topic", "!saychan", "!op", "!uban", "!reset"]
 LISTE_BLAGUE = {"a+":("privmsg", "Je savais que vous alliez dire ça."),
                 "++":("privmsg", "Je savais que vous alliez dire ça."),
@@ -119,6 +119,18 @@ class Dredd(dr.DreddBase):
             ts = self.tasoeur(a)
             if ts != None:
                 c.privmsg(self.channel, "%s" % ts)
+
+    def showcur(self, complement, c, auteur):
+        tmp_list = [(self.curscore[a], [a]) for a in self.curscore.keys()]
+        tmp_list.sort(reverse=True)
+        for i,j in tmp_list:
+            c.privmsg(self.channel, "%s : %s" % (j, i))
+
+    def showmax(self, complement, c, auteur):
+        tmp_list = [(self.maxscore[a], [a]) for a in self.maxscore.keys()]
+        tmp_list.sort(reverse=True)
+        for i,j in tmp_list:
+            c.privmsg(self.channel, "%s : %s" % (j, i))
 
     def getscore(self, complement, c, auteur):
         if auteur not in self.maxscore.keys():
