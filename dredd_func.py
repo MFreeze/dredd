@@ -133,9 +133,12 @@ class Dredd(dr.DreddBase):
             c.privmsg(self.channel, "%s : %s" % (j, i))
 
     def getscore(self, complement, c, auteur):
-        if auteur not in self.maxscore.keys():
+        if auteur not in self.curscore.keys() and auteur not in self.maxscore.keys():
             c.privmsg(self.channel, "T'as pas joué, abruti!")
             self._patience(c, auteur)
+        elif auteur not in self.curscore.keys():
+            c.privmsg(self.channel, "Meilleur : %s, pas de session courante." %
+                      self.maxscore[auteur])
         else:
             c.privmsg(self.channel, "Perso : en cours : %d, Meilleur : %d" % (self.curscore[auteur],
                                                                               self.maxscore[auteur]))
