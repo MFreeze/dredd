@@ -124,13 +124,13 @@ class Dredd(dr.DreddBase):
         tmp_list = [(self.curscore[a], [a]) for a in self.curscore.keys()]
         tmp_list.sort(reverse=True)
         for i,j in tmp_list:
-            c.privmsg(self.channel, "%s : %s" % (j, i))
+            c.privmsg(self.channel, "%s : %s" % (j[0][0:-1], i))
 
     def showmax(self, complement, c, auteur):
         tmp_list = [(self.maxscore[a], [a]) for a in self.maxscore.keys()]
         tmp_list.sort(reverse=True)
         for i,j in tmp_list:
-            c.privmsg(self.channel, "%s : %s" % (j, i))
+            c.privmsg(self.channel, "%s : %s" % (j[0][0:-1], i))
 
     def getscore(self, complement, c, auteur):
         if auteur not in self.curscore.keys() and auteur not in self.maxscore.keys():
