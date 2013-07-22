@@ -24,8 +24,8 @@ def choseRightOne(dico, default, key):
 
 class DreddBase(irc.bot.SingleServerIRCBot):
     def __init__(self, dico=OPTS):
-        server = irc.bot.ServerSpec(dico["server"], int(dico["port"]))
         default=OPTS
+        server = irc.bot.ServerSpec(choseRightOne(dico, default, "server"), int(choseRightOne(dico, default, "port")))
         # Utilisation de la classe SingleServerIRCBot comme classe parente
         try :
             irc.bot.SingleServerIRCBot.__init__(self, [server], dico["nick"], dico["name"], 60)
@@ -151,8 +151,7 @@ def readOptions(dico, cfg_file):
         with open(cfg_file, "r") as f:
             for line in f:
                 lopt = line.split("=")
-                if lopt[0].strip() in dico.keys():
-                    dico[lopt[0].strip()] = lopt[1].strip()
+                dico[lopt[0].strip()] = lopt[1].strip()
     except :
         pass
     return dico
