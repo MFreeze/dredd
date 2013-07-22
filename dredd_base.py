@@ -10,7 +10,8 @@ import getopt
 
 OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664, 
       "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
-      "master":"mfreeze", "masterpass":"penis:666", "name":"Joseph Dredd"}
+      "master":"mfreeze", "masterpass":"penis:666", "name":"Joseph Dredd",
+      "bantime":300}
 
 CONFIG_FILE="dredd.conf"
 
@@ -31,6 +32,7 @@ class DreddBase(irc.bot.SingleServerIRCBot):
         self.operpassword = dico["oppasswd"]
         self.opername = dico["opname"]
         self.banned=[]
+        self.bantime=dico["bantime"]
         # Identité du maître
         self.masterpassword = dico["masterpass"]
         signal.signal(signal.SIGINT, self.quit)
@@ -58,13 +60,13 @@ class DreddBase(irc.bot.SingleServerIRCBot):
             print ("Unban : %s" % nick)
             self.banned.pop(self.banned.index(nick))
 
-    def ban(self, channel, nick, comment="", time=1620):
+    def ban(self, channel, nick, comment=""):
         self.banned.append(nick)
         self.connection.kick(self.channel, nick, comment)
         self.connection.mode(self.channel, "+b %s" % nick)
         print ("Banned : %s" % nick)
         if (time > 0):
-            t = Timer(time, self.unban, [nick])
+            t = Timer(self.bantime, self.unban, [nick])
             t.start()
 
     def on_youreoper(self, c, e):

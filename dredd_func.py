@@ -50,7 +50,8 @@ OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664,
       "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
       "master":"trax", "masterpass":"penis:666", "liste_blague":LISTE_BLAGUE,
       "list_cmd_gm":LISTE_CMD_MASTER, "list_cmd_pv":LISTE_CMD_PRIV,
-      "list_cmd_pub":LISTE_CMD_PUB, "weekend":WEEKEND, "pid":"0", "name":"Joseph Dredd"}
+      "list_cmd_pub":LISTE_CMD_PUB, "weekend":WEEKEND, "pid":"0", "name":"Joseph Dredd",
+      "bantime":300}
 
 CONFIG_FILE="dredd.conf"
 
@@ -73,19 +74,19 @@ class Dredd(dr.DreddBase):
         self.maxscore = {}
         self.bestguy = ""
         self.bestscore = 0
-        try:
+        try :
             pid = int(dico["pid"])
-        except:
+        except :
             pass
         if pid != 0:
             os.kill(pid, signal.SIGINT)
         signal.signal(signal.SIGINT, self.quit)
 
-        try:
+        try :
             with open(SCORE_FILE, "rb") as sc:
                 mypick = pickle.Unpickler(sc)
                 self.maxscore = mypick.load()
-        except:
+        except :
             pass
 
     # Fonction gérant le lancer de dés
@@ -195,11 +196,11 @@ class Dredd(dr.DreddBase):
 
     def uban(self, complement, c, auteur):
         arg = complement.split()
-        print(arg)
         for banned in arg:
             try :
                 self.ban(self.channel, banned, "Une simple envie...")
             except :
+                c.privmsg(auteur, "!uban ban1 [ban2 ban3 ...]")
                 pass
 
     def roll(self, complement, c, auteur):
@@ -339,7 +340,12 @@ class Dredd(dr.DreddBase):
         self.patience += 2
 
     def unbann(self, complement, c, auteur):
-        self.unban(complement)
+        arg=complement.split()
+        for unbanned in arg:
+            try :
+                self.unban(unbanned)
+            except :
+                c.privmsg(auteur, "{0} toujours banni...".format(unbanned))
     
     def op(self, complement, c, auteur):
         if complement == "":
