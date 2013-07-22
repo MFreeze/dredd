@@ -44,6 +44,7 @@ LISTE_BLAGUE = {"a+":("privmsg", "Je savais que vous alliez dire ça."),
                 "chmod 777":("kick", "PUTAIIIIIIIIN"),
                 "^^":("kick", "I'm back!")}
 
+GOODBYE="Je t'exploserai moi même la cervelle... personnellement!"
 PILE_MAX_SIZE = 16
 INIT_PATIENCE = 4
 WEEKEND = ['Déjà ?', 'T\'en est loin coco.', 'Nope :(', 'ça vient !', 'Preque \o/', 'Mais on est déjà en weekend, va te biturer !', 'C\'est déjà presque finis :(']
@@ -84,7 +85,8 @@ class DreddBase(irc.bot.SingleServerIRCBot):
         signal.signal(signal.SIGINT, self.quit)
         # Chargement des options
         self.services = {}
-        try:
+        self.goodbye = GOODBYE
+        try :
             f = open("/etc/services", "r") #ro
             for line in f:
                 if (not line.startswith("#")):
@@ -437,7 +439,7 @@ class Dredd(DreddBase):
     def quit(self, signal=0, frame=""):
         for i in self.banned:
             self.unban(i)
-        self.connection.disconnect("I WILL SURVIVE!")
+        self.connection.disconnect(self.goodbye)
         sys.exit(0)
 
     def topic(self, complement, c, auteur):
