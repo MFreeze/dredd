@@ -92,11 +92,19 @@ class Dredd(dr.DreddBase):
     # Fonction gérant le lancer de dés
     def _des(self, arg):
         dice = arg.split("d")
-        sides = int(dice[1])
-        num = int(dice[0])
-        if num > 9999 or sides > 9999:
+        try :
+            sides = int(dice[1])
+            num = int(dice[0])
+        except :
+            return "Un entier ça te parle?"
+
+        if num > 9999 or sides > 9999 or num < 1 or sides < 1 :
             return "WTF?!?"
-        return sum(randrange(sides)+1 for die in range(num))
+        try :
+            return sum(randrange(sides)+1 for die in range(num))
+        except Error as e :
+            print(e)
+            return "La loi ne fait pas d'erreur... Ah ben si..."
 
     # En cas de message privé
     def on_privmsg(self, c, e):
