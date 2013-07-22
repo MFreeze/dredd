@@ -78,7 +78,7 @@ class DreddBase(irc.bot.SingleServerIRCBot):
         self.connection.kick(self.channel, nick, comment)
         self.connection.mode(self.channel, "+b %s" % nick)
         print ("Banned : {0} [{1}]".format(nick, self.bantime))
-        if (time > 0):
+        if (self.bantime > 0):
             t = Timer(self.bantime, self.unban, [nick])
             t.start()
 

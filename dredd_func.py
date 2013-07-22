@@ -101,7 +101,7 @@ class Dredd(dr.DreddBase):
             return "WTF?!?"
         try :
             return sum(randrange(sides)+1 for die in range(num))
-        except Error as e :
+        except Exception as e :
             print(e)
             return "La loi ne fait pas d'erreur... Ah ben si..."
 
@@ -207,7 +207,8 @@ class Dredd(dr.DreddBase):
         for banned in arg:
             try :
                 self.ban(self.channel, banned, "Une simple envie...")
-            except :
+            except Exception as e :
+                print(e)
                 c.privmsg(auteur, "!uban ban1 [ban2 ban3 ...]")
                 pass
 
