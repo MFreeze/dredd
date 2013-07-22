@@ -203,6 +203,7 @@ class Dredd(dr.DreddBase):
 
     def uban(self, complement, c, auteur):
         arg = complement.split()
+        print(arg)
         for banned in arg:
             try :
                 self.ban(self.channel, banned, "Une simple envie...")
