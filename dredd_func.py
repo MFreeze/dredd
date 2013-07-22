@@ -5,8 +5,10 @@ import sys
 import pickle
 import signal
 import os
-import irclib
+import irc.client
 import urllib
+import urllib.parse
+import urllib.request
 import re
 import getopt
 import dredd_base as dr
@@ -17,7 +19,7 @@ LISTE_CMD_PUB = ["!pop", "!roll", "!enfr", "!fren", "!wp", "!wpf", "!urb", "!por
                  "!halp", "!down", "!jobs", "!bieber", "!weekend", "!dredd", "!popall",
                  "!getscore", "!showcur", "!showmax"]
 LISTE_CMD_PRIV = ["!push", "!id", "!rr"]
-LISTE_CMD_MASTER = ["!update", "!kick", "!topic", "!saychan", "!op", "!uban", "!reset", "!gtfo"]
+LISTE_CMD_MASTER = ["!update", "!kick", "!topic", "!saychan", "!op", "!uban", "!reset", "!gtfo", "!unbann"]
 LISTE_BLAGUE = {"a+":("privmsg", "Je savais que vous alliez dire ça."),
                 "++":("privmsg", "Je savais que vous alliez dire ça."),
                 "marie france":("privmsg", "Mmmmmmmh, Marie France :)"),
@@ -39,8 +41,7 @@ PILE_MAX_SIZE = 16
 INIT_PATIENCE = 4
 WEEKEND = ['Déjà ?', 'T\'en est loin coco.', 'Nope :(', 'ça vient !', 'Preque \o/', 'Mais on est déjà en weekend, va te biturer !', 'C\'est déjà presque fini :(']
 
-MASTER="trax"
-MASTERPASS="penis:666"
+GOODBYE="Je t'exploserai moi même la cervelle... personnellement!"
 
 # TODO: Lecture des scores dans un fichier
 SCORE_FILE="dredd.score"
@@ -49,7 +50,7 @@ OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664,
       "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
       "master":"trax", "masterpass":"penis:666", "liste_blague":LISTE_BLAGUE,
       "list_cmd_gm":LISTE_CMD_MASTER, "list_cmd_pv":LISTE_CMD_PRIV,
-      "list_cmd_pub":LISTE_CMD_PUB, "weekend":WEEKEND, "pid":"0"}
+      "list_cmd_pub":LISTE_CMD_PUB, "weekend":WEEKEND, "pid":"0", "name":"Joseph Dredd"}
 
 CONFIG_FILE="dredd.conf"
 
@@ -61,7 +62,7 @@ class Dredd(dr.DreddBase):
         # Liste des commandes acceptées en privé
         self.ls_cmd_pv = dico["list_cmd_pv"]
         self.ls_cmd_gm = dico["list_cmd_gm"]
-        self.weekend = dico["weekend"]
+        self.week = dico["weekend"]
         # Liste des mots provoquant une action de la part de Dredd
         self.ls_blague = dico["liste_blague"]
         # Création de la pile
@@ -98,22 +99,22 @@ class Dredd(dr.DreddBase):
 
     # En cas de message privé
     def on_privmsg(self, c, e):
-        self.do_command(e, e.arguments()[0])
+        self.do_command(e, e.arguments[0])
 
     # En cas de messages publiés sur le channel
     def on_pubmsg(self, c, e):
-        a = e.arguments()[0].lower()
+        a = e.arguments[0].lower()
 
         # On cherche dans la phrase s'il y a une blague à faire
         for i in (self.ls_blague.keys()):
-            if ((not a.find(i) == -1) and not ( irclib.nm_to_n(e.source()) == self.getnickname())) :
+            if ((not a.find(i) == -1) and not ( e.source.nick == self.getnickname())) :
                 self.execute_sentence(e, i)
                 break
 
         # Puis on cherche si il s'agit d'une commande viable
         cmd = a.split()
         if cmd[0] in self.ls_cmd_pb:
-            self.execute_action(e, e.arguments()[0])
+            self.execute_action(e, e.arguments[0])
 
         if randint(0,100) == 42:
             ts = self.tasoeur(a)
@@ -194,10 +195,12 @@ class Dredd(dr.DreddBase):
 
     def uban(self, complement, c, auteur):
         arg = complement.split()
-        try:
-            self.ban(self.channel, arg[0], "Une simple envie...", arg[1])
-        except:
-            pass
+        print(arg)
+        for banned in arg:
+            try :
+                self.ban(self.channel, banned, "Une simple envie...")
+            except :
+                pass
 
     def roll(self, complement, c, auteur):
         if len(complement) != 0:
@@ -207,7 +210,7 @@ class Dredd(dr.DreddBase):
 
     def urb(self, complement, c, auteur):
         url = "http://urbandictionary.com/define.php?"
-        url += urllib.urlencode({"term":complement.lower()})
+        url += urllib.parse.urlencode({"term":complement.lower()})
         c.privmsg(self.channel, "%s" % (url))
 
     def halp(self, complement, c, auteur):
@@ -218,8 +221,8 @@ class Dredd(dr.DreddBase):
 
     # Permet de savoir si Steve Jobs est encore en vie
     def jobs(self, complement, c, auteur):
-        html = urllib.urlopen("http://en.wikipedia.org/w/api.php?action=query&titles=Steve%20Jobs&prop=categories").read()
-        rget = re.findall("deaths", html)
+        html = urllib.request.urlopen("http://en.wikipedia.org/w/api.php?action=query&titles=Steve%20Jobs&prop=categories").read()
+        rget = re.findall("deaths", str(html))
         if (len(rget) > 0):
             res = "Il est mort \o/"
         else:
@@ -227,8 +230,8 @@ class Dredd(dr.DreddBase):
         c.privmsg(self.channel, res)
 
     def bieber(self, complement, c, auteur):
-        html = urllib.urlopen('http://en.wikipedia.org/w/api.php?action=query&titles=Justin%20Bieber&prop=categories').read()
-        url = re.findall('deaths', html)
+        html = urllib.request.urlopen('http://en.wikipedia.org/w/api.php?action=query&titles=Justin%20Bieber&prop=categories').read()
+        url = re.findall('deaths', str(html))
         if len(url) != 0:
             res = "Il est mort \o/"
         else:
@@ -252,7 +255,7 @@ class Dredd(dr.DreddBase):
     def is_down(self, complement, c, auteur):
         mes = ""
         try:
-            url_obj = urllib.urlopen(complement)
+            url_obj = urllib.request.urlopen(complement)
             if url_obj.getcode() == 200:
                 mes += "Ta connexion est en carton."
             elif url_obj.getcode() == 404:
@@ -273,22 +276,22 @@ class Dredd(dr.DreddBase):
 
     def wp(self, complement, c, auteur):
         url = "http://en.wikipedia.org/w/index.php?"
-        url += urllib.urlencode({"search":complement.lower()})
+        url += urllib.parse.urlencode({"search":complement.lower()})
         c.privmsg(self.channel, "%s" % (url))
 
     def wpf(self, complement, c, auteur):
         url = "http://fr.wikipedia.org/w/index.php?"
-        url += urllib.urlencode({"search":complement.lower()})
+        url += urllib.parse.urlencode({"search":complement.lower()})
         c.privmsg(self.channel, "%s" % (url))
 
     def enfr(self, complement, c, auteur):
         url = "http://www.wordreference.com/enfr/" 
-        url += urllib.pathname2url(complement.lower())
+        url += urllib.request.pathname2url(complement.lower())
         c.privmsg(self.channel, "%s" % (url))
 
     def fren(self, complement, c, auteur):
         url = "http://www.wordreference.com/fren/" 
-        url += urllib.pathname2url(complement.lower())
+        url += urllib.request.pathname2url(complement.lower())
         c.privmsg(self.channel, "%s" % (url))
 
     def popall(self, complement, c, auteur):
@@ -303,12 +306,12 @@ class Dredd(dr.DreddBase):
         c.privmsg(self.channel, self.is_down(complement, c, auteur))
 
     def weekend(self, complement, c, auteur):
-        c.privmsg(self.channel, self.WEEKEND[date.today().weekday()])
+        c.privmsg(self.channel, self.week[date.today().weekday()])
 
     # Gestion des commandes publiques
     def execute_action(self, e, arg):
         c = self.connection
-        auteur = irclib.nm_to_n(e.source())
+        auteur = e.source.nick
         cmd = arg.split()
         if cmd[0] in self.ls_cmd_pb:
             # Récupération des arguments de la commande
@@ -320,7 +323,7 @@ class Dredd(dr.DreddBase):
     # Gestion des blagues
     def execute_sentence(self, e, blague):
         c = self.connection
-        auteur = irclib.nm_to_n(e.source())
+        auteur = e.source.nick
         action = self.ls_blague[blague]
         if action[0].strip() == "privmsg":
             getattr(c, action[0])(self.channel, action[1])
@@ -334,6 +337,9 @@ class Dredd(dr.DreddBase):
     def kick(self, complement, c, auteur):
         c.kick(self.channel, complement, "Dans ta face ...")
         self.patience += 2
+
+    def unbann(self, complement, c, auteur):
+        self.unban(complement)
     
     def op(self, complement, c, auteur):
         if complement == "":
@@ -379,7 +385,7 @@ class Dredd(dr.DreddBase):
     # Liste des actions réalisées en réponse à des messages privés
     def do_command(self, e, arg):
         # Utilisation du masque irclib.nm_to_n pour récupérer l'auteur du message
-        auteur = irclib.nm_to_n(e.source())
+        auteur = e.source.nick
         c = self.connection
 
         cmd = arg.split()
