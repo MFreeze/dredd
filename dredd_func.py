@@ -37,7 +37,7 @@ LISTE_BLAGUE = {"a+":("privmsg", "Je savais que vous alliez dire ça."),
 
 PILE_MAX_SIZE = 16
 INIT_PATIENCE = 4
-WEEKEND = ['Déjà ?', 'T\'en est loin coco.', 'Nope :(', 'ça vient !', 'Preque \o/', 'Mais on est déjà en weekend, va te biturer !', 'C\'est déjà presque finis :(']
+WEEKEND = ['Déjà ?', 'T\'en est loin coco.', 'Nope :(', 'ça vient !', 'Preque \o/', 'Mais on est déjà en weekend, va te biturer !', 'C\'est déjà presque fini :(']
 
 MASTER="trax"
 MASTERPASS="penis:666"
@@ -303,7 +303,7 @@ class Dredd(dr.DreddBase):
         c.privmsg(self.channel, self.is_down(complement, c, auteur))
 
     def weekend(self, complement, c, auteur):
-        c.privmsg(self.channel, self.weekend[date.today().weekday()])
+        c.privmsg(self.channel, self.WEEKEND[date.today().weekday()])
 
     # Gestion des commandes publiques
     def execute_action(self, e, arg):

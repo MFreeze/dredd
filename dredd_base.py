@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #-*-coding:utf-8-*
 
-import ircbot
-import irclib
+import irc.bot
+import irc.client
 from threading import Timer
 import signal
 import sys
@@ -10,14 +10,15 @@ import getopt
 
 OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664, 
       "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
-      "master":"trax", "masterpass":"penis:666"}
+      "master":"mfreeze", "masterpass":"penis:666", "name":"Joseph Dredd"}
 
 CONFIG_FILE="dredd.conf"
 
-class DreddBase(ircbot.SingleServerIRCBot):
+class DreddBase(irc.bot.SingleServerIRCBot):
     def __init__(self, dico):
+        server = irc.bot.ServerSpec(dico["server"], int(dico["port"]))
         # Utilisation de la classe SingleServerIRCBot comme classe parente
-        ircbot.SingleServerIRCBot.__init__(self, [(dico["server"], dico["port"])], dico["nick"], 60)
+        irc.bot.SingleServerIRCBot.__init__(self, [server], dico["nick"], dico["name"], 60)
         #self.ircobj.add_global_handler("youreoper", self.rapport)
         #self.ircobj.add_global_handler("all_events", self.rapportbis)
         self.nick = dico["nick"]
@@ -35,7 +36,7 @@ class DreddBase(ircbot.SingleServerIRCBot):
         signal.signal(signal.SIGINT, self.quit)
         # Chargement des options
         self.services = {}
-        try:
+        try :
             f = open("/etc/services", "r") #ro
             for line in f:
                 if (not line.startswith("#")):
@@ -70,7 +71,7 @@ class DreddBase(ircbot.SingleServerIRCBot):
         c.mode(self.channel, "+o %s" % self.nick)
 
     def rapportbis(self, c, e):
-        print e.eventtype()
+        print(e.eventtype())
     
     # Retourne le nick
     def getnickname(self):
@@ -90,16 +91,16 @@ class DreddBase(ircbot.SingleServerIRCBot):
 
     # En cas de message privé
     def on_privmsg(self, c, e):
-        a = e.arguments()[0].lower()
-        cmd = a.strip()
+        a = e.arguments[0].lower()
+        cmd = a.split(" ")
         if cmd[0] == "!id":
-            auteur = irclib.nm_to_n(e.source())
+            auteur = e.source.nick
             complement = " ".join(cmd[1:])
-            self.id(complement, c, auteur)
+            self.sid(complement, c, auteur)
 
     # En cas de connexion
     def on_join(self, c, e):
-        qui = irclib.nm_to_n(e.source())
+        qui = e.source.nick
         if (qui == self.master):
             c.privmsg(self.channel, "HEIL %s ! :3" % (qui))
             c.mode(qui, "+o")
@@ -108,22 +109,22 @@ class DreddBase(ircbot.SingleServerIRCBot):
 
     # En cas de déconnection
     def on_quit(self, c, e):
-        qui = irclib.nm_to_n(e.source())
+        qui = e.source.nick
         if (qui == self.master):
             self.master = OPTS["master"]
 
     # En cas de changement de nick
     def on_nick(self, c, e):
-        qui = irclib.nm_to_n(e.source())
-        vers = irclib.nm_to_n(e.target())
+        qui = e.source.nick
+        vers = e.target
         if (qui == self.master):
             self.master = vers
 
-    def id(self, complement, c, auteur):
+    def sid(self, complement, c, auteur):
         if complement == self.masterpassword:
             self.master = auteur
             c.privmsg(auteur, "=)")
-        else:
+        else :
             c.privmsg(auteur, "Fous toi ton %s où je pense!" % complement)
 
     def quit(self):
@@ -131,7 +132,7 @@ class DreddBase(ircbot.SingleServerIRCBot):
         self.die()
 
 if __name__ == "__main__":
-    try:
+    try :
         opt, arg = getopt.getopt(sys.argv[1:], "c:")
     except getopt.GetoptError as err:
         print ("Erreur à la lecture des options, sélection des options par défaut")
@@ -142,13 +143,13 @@ if __name__ == "__main__":
         else:
             pass
 
-    try:
+    try :
         with open(CONFIG_FILE, "r") as f:
             for line in f:
                 lopt = line.split("=")
                 if lopt[0].strip() in OPTS.keys():
-                    OPTS[lopt[0].strip()] = lopt[1].strip
-    except:
+                    OPTS[lopt[0].strip()] = lopt[1].strip()
+    except :
         pass
 
     dredd = DreddBase(OPTS)
