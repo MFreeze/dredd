@@ -41,31 +41,30 @@ PILE_MAX_SIZE = 16
 INIT_PATIENCE = 4
 WEEKEND = ['Déjà ?', 'T\'en est loin coco.', 'Nope :(', 'ça vient !', 'Preque \o/', 'Mais on est déjà en weekend, va te biturer !', 'C\'est déjà presque fini :(']
 
-GOODBYE="Je t'exploserai moi même la cervelle... personnellement!"
+
 
 # TODO: Lecture des scores dans un fichier
 SCORE_FILE="dredd.score"
 
-OPTS={"chan":"#stux", "nick":"Dredd", "server":"dadaist.com", "port":1664, 
-      "hello": "Ici la loi c'est moi.", "oppasswd":"BITE", "opname":"BITE", 
-      "master":"trax", "masterpass":"penis:666", "liste_blague":LISTE_BLAGUE,
+OPTS={"liste_blague":LISTE_BLAGUE,
       "list_cmd_gm":LISTE_CMD_MASTER, "list_cmd_pv":LISTE_CMD_PRIV,
       "list_cmd_pub":LISTE_CMD_PUB, "weekend":WEEKEND, "pid":"0", "name":"Joseph Dredd",
-      "bantime":300}
+      "goodbye":"Je t'exploserai moi même la cervelle... personnellement!"}
 
 CONFIG_FILE="dredd.conf"
 
 class Dredd(dr.DreddBase):
-    def __init__(self, dico):
+    def __init__(self, dico=OPTS):
+        default=OPTS
         dr.DreddBase.__init__(self, dico)
         # Liste des commandes acceptées sur le chan
-        self.ls_cmd_pb = dico["list_cmd_pub"]
+        self.ls_cmd_pb = dr.choseRightOne(dico, default, "list_cmd_pub")
         # Liste des commandes acceptées en privé
-        self.ls_cmd_pv = dico["list_cmd_pv"]
-        self.ls_cmd_gm = dico["list_cmd_gm"]
-        self.week = dico["weekend"]
+        self.ls_cmd_pv = dr.choseRightOne(dico, default, "list_cmd_pv")
+        self.ls_cmd_gm = dr.choseRightOne(dico, default, "list_cmd_gm")
+        self.week = dr.choseRightOne(dico, default, "weekend")
         # Liste des mots provoquant une action de la part de Dredd
-        self.ls_blague = dico["liste_blague"]
+        self.ls_blague = dr.choseRightOne(dico, default, "liste_blague")
         # Création de la pile
         self.pile = list()
         # Indice de patience
@@ -211,10 +210,11 @@ class Dredd(dr.DreddBase):
                 c.privmsg(auteur, "!uban ban1 [ban2 ban3 ...]")
                 pass
 
+    # TODO Throw an error and catch it to make a patience test
     def roll(self, complement, c, auteur):
         if len(complement) != 0:
             c.privmsg(self.channel, "%s" % (self._des(complement)))
-        else:
+        else :
             c.privmsg(self.channel, "%s" % (self._des("1d6")))
 
     def urb(self, complement, c, auteur):
@@ -373,7 +373,7 @@ class Dredd(dr.DreddBase):
                 mypick.dump(self.maxscore)
         except:
             pass
-        self.connection.disconnect("I WILL SURVIVE!")
+        self.connection.disconnect(self.goodbye)
         sys.exit(0)
 
     def topic(self, complement, c, auteur):
@@ -433,7 +433,7 @@ class Dredd(dr.DreddBase):
             self._patience(c, auteur)
 
 if __name__ == "__main__":
-    try:
+    try :
         opt, arg = getopt.getopt(sys.argv[1:], "c:p:")
     except getopt.GetoptError as err:
         print ("Erreur à la lecture des options, sélection des options par défaut")
@@ -446,18 +446,7 @@ if __name__ == "__main__":
         else:
             pass
 
-    try:
-        with open(CONFIG_FILE, "r") as f:
-            for line in f:
-                lopt = line.split("=")
-                if lopt[0].strip() in OPTS.keys():
-                    opt2 = lopt[1].replace("\n", "")
-                    if lopt[0].strip() == "port":
-                        OPTS["port"] = int(opt2.strip())
-                    else:
-                        OPTS[lopt[0].strip()] = opt2.strip()
-    except:
-        pass
+    OPTS = dr.readOptions(OPTS,CONFIG_FILE)
 
     dredd=Dredd(OPTS)
     dredd.start()
